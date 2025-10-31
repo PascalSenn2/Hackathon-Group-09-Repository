@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import { useMatching } from '@/contexts/MatchingContext';
 import { Match } from '@/types/matching';
-import { getTopMatches } from '@/lib/matching-algorithm';
+import { getTopMatches, getAllMatches } from '@/lib/matching-algorithm';
+import { minWeightAssign } from 'munkres-algorithm';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -39,11 +40,11 @@ export default function Matches() {
   }, [matches, approvedMatches]);
 
   const generateGraph = () => {
-    const pendingMatches = matches.filter(m => m.status === 'pending' && m.normalizedScore > 0.65);
+    const pendingMatches = matches.filter(m => m.status === 'pending');
     const approved = approvedMatches;
 
     // Get top matches for each person (2-4 matches)
-    const mentorMatches = new Map<string, Match[]>();
+    /*const mentorMatches = new Map<string, Match[]>();
     const menteeMatches = new Map<string, Match[]>();
 
     mentors.forEach(mentor => {
@@ -58,6 +59,33 @@ export default function Matches() {
       if (topMatches.length > 0) {
         menteeMatches.set(mentee.id, topMatches);
       }
+    });*/
+
+    // Calculate to match based on the hungarian algorithm
+    const mentorMatches = new Map<string, Match[]>();
+    let matrix = []
+
+    mentors.forEach(mentor => {
+      const allMatches = getAllMatches(pendingMatches, mentor.id, undefined);
+      let rowList: number[] = [];
+      allMatches.forEach(match => {
+        rowList.push(match.normalizedScore);
+      });
+      matrix.push(rowList);
+    });
+    const bestMatches = minWeightAssign(matrix).assignments;
+
+    let counter = 1;
+    bestMatches.forEach(matchNumber => {
+      const allMatches = getAllMatches(pendingMatches, String(counter), undefined);
+      let newList: Match[] = [];
+      allMatches.forEach( match => {
+        if (match.menteeId == String(matchNumber)) {
+          newList.push(match)
+        }
+      })
+      mentorMatches.set(String(counter), newList);
+      counter++;
     });
 
     // Create nodes - approved matches at top
@@ -196,12 +224,12 @@ export default function Matches() {
       }
 
       const mentorTopMatches = mentorMatches.get(match.mentorId) || [];
-      const menteeTopMatches = menteeMatches.get(match.menteeId) || [];
+      //const menteeTopMatches = menteeMatches.get(match.menteeId) || [];
       
       const isMentorTop = mentorTopMatches.some(m => m.menteeId === match.menteeId);
-      const isMenteeTop = menteeTopMatches.some(m => m.mentorId === match.mentorId);
+      //const isMenteeTop = menteeTopMatches.some(m => m.mentorId === match.mentorId);
       
-      if (isMentorTop || isMenteeTop) {
+      if (isMentorTop/* || isMenteeTop*/) {
         newEdges.push({
           id: `edge-${match.mentorId}-${match.menteeId}`,
           source: `mentor-${match.mentorId}`,

@@ -224,3 +224,19 @@ export function getTopMatches(
 
   return filtered.slice(0, limit);
 }
+
+export function getAllMatches(
+  matches: Match[],
+  mentorId?: string,
+  menteeId?: string,
+): Match[] {
+  let filtered = matches;
+  
+  if (mentorId) {
+    filtered = matches.filter(m => m.mentorId === mentorId);
+  } else if (menteeId) {
+    filtered = matches.filter(m => m.menteeId === menteeId);
+  }
+
+  return filtered;
+}
