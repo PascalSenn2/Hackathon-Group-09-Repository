@@ -33,7 +33,7 @@ export default function Criteria() {
       return mentors.map(m => m.id);
     }
     
-    [...mentors, ...mentees].forEach(person => {
+    mentors.forEach(person => {
       const value = person[attribute as keyof (typeof person)];
       if (value !== undefined && value !== null && value !== '') {
         uniqueValues.add(String(value));
