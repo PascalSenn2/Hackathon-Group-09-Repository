@@ -34,7 +34,7 @@ export default function Criteria() {
     }
     
     mentors.forEach(person => {
-      const value = person[attribute as keyof (typeof person)];
+      const value = person[attribute];
       if (value !== undefined && value !== null && value !== '') {
         uniqueValues.add(String(value));
       }
