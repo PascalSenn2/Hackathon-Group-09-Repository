@@ -16,29 +16,37 @@ export default function Criteria() {
   const { mentors, mentees, criteria, addCriterion, removeCriterion, setMatches } = useMatching();
   const [newCriterion, setNewCriterion] = useState<Partial<MatchingCriterion>>({
     menteeId: mentees[0]?.id || '',
-    attribute: 'MentorId',
+    attribute: 'gender',
     condition: 'equals',
     value: ''
   });
 
   const attributes = [
-    'MentorId', 'Gender', 'Nationality', 'City', 'Level ofStudies', 
-    'GermanLevel', 'EnglishLevel', 'Birth year'
+    'mentorId', 'gender', 'nationality', 'city', 'levelOfStudies', 
+    'germanLevel', 'englishLevel', 'birthYear'
   ];
 
   const getAttributeOptions = (attribute: string): string[] => {
     const uniqueValues = new Set<string>();
     
-    if (attribute === 'MentorId') {
+    if (attribute === 'mentorId') {
       return mentors.map(m => m.id);
     }
     
-  mentors.forEach(mentor => {
-    const value = (mentor as any)[attribute];
-    if (value !== undefined && value !== null && value !== '') {
-      uniqueValues.add(String(value));
+    if (attribute === 'gender') {
+    // Return all mentor IDs as strings, no duplicates, sorted
+      uniqueValues.add(String('abc'));
+      uniqueValues.add(String('def'));
+
     }
-  });
+
+
+    // [...mentors, ...mentees].forEach(person => {
+    //   const value = person[attribute as keyof (typeof person)];
+    //   if (value !== undefined && value !== null && value !== '') {
+    //     uniqueValues.add(String(value));
+    //   }
+    // });
     
     return Array.from(uniqueValues).sort();
   };
@@ -55,7 +63,7 @@ export default function Criteria() {
       addCriterion(newCriterion as MatchingCriterion);
       setNewCriterion({
         menteeId: mentees[0]?.id || '',
-        attribute: 'MentorId',
+        attribute: 'gender',
         condition: 'equals',
         value: ''
       });
@@ -126,7 +134,7 @@ export default function Criteria() {
                 <SelectContent>
                   {attributes.map(attr => (
                     <SelectItem key={attr} value={attr}>
-                      {attr === 'MentorId' ? 'Mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim()}
+                      {attr === 'mentorId' ? 'Mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim()}
                     </SelectItem>
                   ))}
                 </SelectContent>
