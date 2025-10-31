@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import { useMatching } from '@/contexts/MatchingContext';
 import { Match } from '@/types/matching';
-import { getTopMatches } from '@/lib/matching-algorithm';
+import { getTopMatches, getAllMatches } from '@/lib/matching-algorithm';
+import { minWeightAssign } from 'munkres-algorithm';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -39,35 +40,62 @@ export default function Matches() {
   }, [matches, approvedMatches]);
 
   const generateGraph = () => {
-    const pendingMatches = matches.filter(m => m.status === 'pending' && m.normalizedScore > 0.65);
+    const pendingMatches = matches.filter(m => m.status === 'pending');
     const approved = approvedMatches;
 
-    // Get top matches for each person (2-4 matches)
+    // Create approved pairs set first
+    const approvedPairs = new Set<string>();
+    approved.forEach(match => {
+      approvedPairs.add(match.mentorId);
+      approvedPairs.add(match.menteeId);
+    });
+
+    // Calculate to match based on the hungarian algorithm
     const mentorMatches = new Map<string, Match[]>();
-    const menteeMatches = new Map<string, Match[]>();
+    const matrix: number[][] = [];
 
-    mentors.forEach(mentor => {
-      const topMatches = getTopMatches(pendingMatches, mentor.id, undefined, 4);
-      if (topMatches.length > 0) {
-        mentorMatches.set(mentor.id, topMatches);
-      }
+    // Filter mentors and mentees that haven't been approved yet
+    const availableMentors = mentors.filter(m => !approvedPairs.has(m.id));
+    const availableMentees = mentees.filter(m => !approvedPairs.has(m.id));
+
+    // Build cost matrix (Hungarian algorithm minimizes cost, so use 1 - normalizedScore)
+    availableMentors.forEach(mentor => {
+      const allMatches = getAllMatches(pendingMatches, mentor.id, undefined);
+      const rowList: number[] = [];
+
+      availableMentees.forEach(mentee => {
+        const match = allMatches.find(m => m.menteeId === mentee.id);
+        // Use inverse of normalized score as cost (lower score = higher cost)
+        rowList.push(match ? (1 - match.normalizedScore) : 1);
+      });
+
+      matrix.push(rowList);
     });
 
-    mentees.forEach(mentee => {
-      const topMatches = getTopMatches(pendingMatches, undefined, mentee.id, 4);
-      if (topMatches.length > 0) {
-        menteeMatches.set(mentee.id, topMatches);
-      }
-    });
+    // Only run Hungarian algorithm if we have both mentors and mentees
+    if (matrix.length > 0 && matrix[0].length > 0) {
+      const result = minWeightAssign(matrix);
+
+      result.assignments.forEach((menteeIndex, mentorIndex) => {
+        const mentor = availableMentors[mentorIndex];
+        const mentee = availableMentees[menteeIndex];
+
+        if (mentor && mentee) {
+          const match = pendingMatches.find(
+            m => m.mentorId === mentor.id && m.menteeId === mentee.id
+          );
+
+          if (match) {
+            mentorMatches.set(mentor.id, [match]);
+          }
+        }
+      });
+    }
 
     // Create nodes - approved matches at top
     const newNodes: Node[] = [];
-    const approvedPairs = new Set<string>();
-    
+
     approved.forEach((match, index) => {
-      approvedPairs.add(match.mentorId);
-      approvedPairs.add(match.menteeId);
-      
       const mentor = mentors.find(m => m.id === match.mentorId);
       const mentee = mentees.find(m => m.id === match.menteeId);
       
@@ -120,7 +148,14 @@ export default function Matches() {
 
     // Create nodes for pending matches
     const pendingMentors = mentors.filter(m => !approvedPairs.has(m.id) && mentorMatches.has(m.id));
-    const pendingMentees = mentees.filter(m => !approvedPairs.has(m.id) && menteeMatches.has(m.id));
+    const pendingMentees = mentees.filter(m => !approvedPairs.has(m.id));
+
+    // Get all mentee IDs that are in the best matches
+    const matchedMenteeIds = new Set<string>();
+    mentorMatches.forEach(matches => {
+      matches.forEach(match => matchedMenteeIds.add(match.menteeId));
+    });
+    const filteredPendingMentees = pendingMentees.filter(m => matchedMenteeIds.has(m.id));
     
     const startY = 50 + approved.length * 120 + 100;
     
@@ -146,19 +181,19 @@ export default function Matches() {
       });
     });
 
-    pendingMentees.forEach((mentee, index) => {
+    filteredPendingMentees.forEach((mentee, index) => {
       newNodes.push({
         id: `mentee-${mentee.id}`,
         type: 'default',
         position: { x: 600, y: startY + index * 100 },
-        data: { 
+        data: {
           label: (
             <div className="text-xs">
               <div className="font-semibold">{mentee.id}</div>
             </div>
           )
         },
-        style: { 
+        style: {
           background: 'hsl(var(--secondary))',
           color: 'white',
           border: '2px solid hsl(var(--secondary))',
@@ -196,12 +231,9 @@ export default function Matches() {
       }
 
       const mentorTopMatches = mentorMatches.get(match.mentorId) || [];
-      const menteeTopMatches = menteeMatches.get(match.menteeId) || [];
-      
       const isMentorTop = mentorTopMatches.some(m => m.menteeId === match.menteeId);
-      const isMenteeTop = menteeTopMatches.some(m => m.mentorId === match.mentorId);
-      
-      if (isMentorTop || isMenteeTop) {
+
+      if (isMentorTop) {
         newEdges.push({
           id: `edge-${match.mentorId}-${match.menteeId}`,
           source: `mentor-${match.mentorId}`,
