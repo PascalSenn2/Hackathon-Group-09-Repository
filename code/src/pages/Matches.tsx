@@ -51,21 +51,16 @@ export default function Matches() {
       approvedPairs.add(match.menteeId);
     });
 
-    // Calculate optimal matches using Hungarian algorithm only once (when we don't have them yet)
-    let mentorMatches = new Map<string, Match[]>(optimalMatches);
+    // Calculate optimal matches using Hungarian algorithm only once
+    let mentorMatches = new Map<string, Match[]>();
 
-    // Only calculate if we don't have optimal matches yet or if all previous matches are now approved/rejected
-    const needsRecalculation = optimalMatches.size === 0 ||
-      Array.from(optimalMatches.values()).every(matchArr =>
-        matchArr.every(m => m.status !== 'pending')
-      );
-
-    if (needsRecalculation && pendingMatches.length > 0) {
+    if (optimalMatches.size === 0 && pendingMatches.length > 0) {
+      // First time - calculate the optimal assignment
       const matrix: number[][] = [];
       const availableMentors = mentors.filter(m => !approvedPairs.has(m.id));
       const availableMentees = mentees.filter(m => !approvedPairs.has(m.id));
 
-      // Build cost matrix (Hungarian algorithm minimizes cost, so use 1 - normalizedScore)
+      // Build cost matrix
       availableMentors.forEach(mentor => {
         const allMatches = getAllMatches(pendingMatches, mentor.id, undefined);
         const rowList: number[] = [];
@@ -78,39 +73,49 @@ export default function Matches() {
         matrix.push(rowList);
       });
 
-      // Only run Hungarian algorithm if we have both mentors and mentees
+      // Run Hungarian algorithm
       if (matrix.length > 0 && matrix[0].length > 0) {
         const result = minWeightAssign(matrix);
-        const newOptimalMatches = new Map<string, Match[]>();
+        const newOptimalMatches = new Map<string, string>();
 
         result.assignments.forEach((menteeIndex, mentorIndex) => {
           const mentor = availableMentors[mentorIndex];
           const mentee = availableMentees[menteeIndex];
-
           if (mentor && mentee) {
-            const match = pendingMatches.find(
-              m => m.mentorId === mentor.id && m.menteeId === mentee.id
-            );
-
-            if (match) {
-              newOptimalMatches.set(mentor.id, [match]);
-            }
+            newOptimalMatches.set(mentor.id, mentee.id);
           }
         });
 
-        mentorMatches = newOptimalMatches;
-        setOptimalMatches(newOptimalMatches);
+        // Store the optimal pairing (mentor.id -> mentee.id)
+        setOptimalMatches(newOptimalMatches as any);
+
+        // Build mentorMatches for display
+        newOptimalMatches.forEach((menteeId, mentorId) => {
+          const match = pendingMatches.find(
+            m => m.mentorId === mentorId && m.menteeId === menteeId
+          );
+          if (match) {
+            mentorMatches.set(mentorId, [match]);
+          }
+        });
       }
     } else {
-      // Filter out approved/rejected matches from the optimal matches
-      const filteredMatches = new Map<string, Match[]>();
-      optimalMatches.forEach((matchArray, mentorId) => {
-        const stillPending = matchArray.filter(m => m.status === 'pending' && !approvedPairs.has(m.menteeId));
-        if (stillPending.length > 0) {
-          filteredMatches.set(mentorId, stillPending);
+      // Use the stored optimal assignment, just look up current match objects
+      optimalMatches.forEach((menteeId: any, mentorId) => {
+        // Skip if either mentor or mentee has been approved
+        if (approvedPairs.has(mentorId) || approvedPairs.has(menteeId)) {
+          return;
+        }
+
+        // Find the current match object
+        const match = matches.find(
+          m => m.mentorId === mentorId && m.menteeId === menteeId && m.status === 'pending'
+        );
+
+        if (match) {
+          mentorMatches.set(mentorId, [match]);
         }
       });
-      mentorMatches = filteredMatches;
     }
 
     // Create nodes - approved matches at top
