@@ -43,20 +43,28 @@ export default function Matches() {
     const pendingMatches = matches.filter(m => m.status === 'pending');
     const approved = approvedMatches;
 
-    // Create approved pairs set first
-    const approvedPairs = new Set<string>();
-    approved.forEach(match => {
-      approvedPairs.add(match.mentorId);
-      approvedPairs.add(match.menteeId);
-    });
+    // Create approved pairs as a list of tuples [mentorId, menteeId]
+    const approvedPairs: [string, string][] = approved.map(m => [m.mentorId, m.menteeId]);
+
+    const approvedMentors: Set<string> = new Set(approved.map(m => m.mentorId));
+    const approvedMentees: Set<string> = new Set(approved.map(m => m.menteeId));
+
+    // Also build a Set of approved IDs for quick membership checks (keeps compatibility
+    // with existing code that expects approvedPairs.has)
+    // const approvedPairsSet = new Set<string>();
+    // approvedPairs.forEach(([mentorId, menteeId]) => {
+    //   approvedPairsSet.add(mentorId);
+    //   approvedPairsSet.add(menteeId);
+    // });
+
 
     // Calculate to match based on the hungarian algorithm
     const mentorMatches = new Map<string, Match[]>();
     const matrix: number[][] = [];
 
     // Filter mentors and mentees that haven't been approved yet
-    const availableMentors = mentors.filter(m => !approvedPairs.has(m.id));
-    const availableMentees = mentees.filter(m => !approvedPairs.has(m.id));
+    const availableMentors = mentors.filter(m => !approvedMentors.has(m.id));
+    const availableMentees = mentees.filter(m => !approvedMentees.has(m.id));
 
     // Build cost matrix (Hungarian algorithm minimizes cost, so use 1 - normalizedScore)
     availableMentors.forEach(mentor => {
@@ -147,8 +155,8 @@ export default function Matches() {
     });
 
     // Create nodes for pending matches
-    const pendingMentors = mentors.filter(m => !approvedPairs.has(m.id) && mentorMatches.has(m.id));
-    const pendingMentees = mentees.filter(m => !approvedPairs.has(m.id));
+    const pendingMentors = mentors.filter(m => !approvedMentors.has(m.id) && mentorMatches.has(m.id));
+    const pendingMentees = mentees.filter(m => !approvedMentees.has(m.id));
 
     // Get all mentee IDs that are in the best matches
     const matchedMenteeIds = new Set<string>();
@@ -226,7 +234,7 @@ export default function Matches() {
 
     // Pending edges
     pendingMatches.forEach(match => {
-      if (approvedPairs.has(match.mentorId) || approvedPairs.has(match.menteeId)) {
+      if (approvedMentors.has(match.mentorId) || approvedMentees.has(match.menteeId)) {
         return;
       }
 
