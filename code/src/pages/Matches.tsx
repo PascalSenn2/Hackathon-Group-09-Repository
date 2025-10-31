@@ -43,23 +43,12 @@ export default function Matches() {
     const pendingMatches = matches.filter(m => m.status === 'pending');
     const approved = approvedMatches;
 
-    // Get top matches for each person (2-4 matches)
-    /*const mentorMatches = new Map<string, Match[]>();
-    const menteeMatches = new Map<string, Match[]>();
-
-    mentors.forEach(mentor => {
-      const topMatches = getTopMatches(pendingMatches, mentor.id, undefined, 4);
-      if (topMatches.length > 0) {
-        mentorMatches.set(mentor.id, topMatches);
-      }
+    // Create approved pairs set first
+    const approvedPairs = new Set<string>();
+    approved.forEach(match => {
+      approvedPairs.add(match.mentorId);
+      approvedPairs.add(match.menteeId);
     });
-
-    mentees.forEach(mentee => {
-      const topMatches = getTopMatches(pendingMatches, undefined, mentee.id, 4);
-      if (topMatches.length > 0) {
-        menteeMatches.set(mentee.id, topMatches);
-      }
-    });*/
 
     // Calculate to match based on the hungarian algorithm
     const mentorMatches = new Map<string, Match[]>();
@@ -105,12 +94,8 @@ export default function Matches() {
 
     // Create nodes - approved matches at top
     const newNodes: Node[] = [];
-    const approvedPairs = new Set<string>();
-    
+
     approved.forEach((match, index) => {
-      approvedPairs.add(match.mentorId);
-      approvedPairs.add(match.menteeId);
-      
       const mentor = mentors.find(m => m.id === match.mentorId);
       const mentee = mentees.find(m => m.id === match.menteeId);
       
