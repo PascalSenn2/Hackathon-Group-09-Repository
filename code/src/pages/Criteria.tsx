@@ -141,9 +141,9 @@ export default function Criteria() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="equals">equals</SelectItem>
-                  <SelectItem value="not_equals">does not equal</SelectItem>
-                  <SelectItem value="contains">contains</SelectItem>
-                  <SelectItem value="does_not_contain">does not contain</SelectItem>
+                  <SelectItem value="not_equals">not equals</SelectItem>
+                  <SelectItem value="at_least">at least</SelectItem>
+                  <SelectItem value="at_most">at most</SelectItem>
                 </SelectContent>
               </Select>
 
