@@ -33,12 +33,12 @@ export default function Criteria() {
       return mentors.map(m => m.id);
     }
     
-    mentors.forEach(person => {
-      const value = person[attribute];
-      if (value !== undefined && value !== null && value !== '') {
-        uniqueValues.add(String(value));
-      }
-    });
+  mentors.forEach(mentor => {
+    const value = (mentor as any)[attribute];
+    if (value !== undefined && value !== null && value !== '') {
+      uniqueValues.add(String(value));
+    }
+  });
     
     return Array.from(uniqueValues).sort();
   };
