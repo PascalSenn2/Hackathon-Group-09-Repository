@@ -38,7 +38,7 @@ function calculateAgeDifference(mentor: Mentor, mentee: Mentee): number {
 
 function calculateGenderMatch(mentor: Mentor, mentee: Mentee): number {
   if (mentee.desiredGender.toLowerCase() === 'doesn\'t matter') {
-    return 0.5; // Neutral match
+    return 0; // Neutral match
   }
   return mentor.gender.toLowerCase() === mentee.desiredGender.toLowerCase() ? 0 : 1;
 }
@@ -77,7 +77,7 @@ function calculateStudyLevelMatch(mentor: Mentor, mentee: Mentee): number {
 }
 
 function calculateNationalityMatch(mentor: Mentor, mentee: Mentee): number {
-  return mentor.nationality.toLowerCase() === mentee.nationality.toLowerCase() ? -0.5 : 0;
+  return mentor.nationality.toLowerCase() === mentee.nationality.toLowerCase() ? 0 : 1;
 }
 
 function passesExclusionCriteria(
@@ -149,13 +149,13 @@ export function calculateMatches(
           criterion: 'Age Difference',
           weight: WEIGHTS.age,
           contribution: WEIGHTS.age * ageDiff,
-          explanation: `Age difference: ${Math.abs(mentor.birthYear - mentee.birthYear)} years`
+          explanation: `Age difference: ${Math.abs(mentor.birthYear - mentee.birthYear)} years (${mentor.birthYear} / ${mentee.birthYear})`
         },
         {
           criterion: 'Gender Preference',
           weight: WEIGHTS.gender,
           contribution: WEIGHTS.gender * genderMatch,
-          explanation: genderMatch === 0 ? 'Perfect gender match' : 'Gender preference mismatch'
+          explanation: genderMatch === 0 ? 'Prefered gender matched / no gender preference' : 'Gender preference mismatch'
         },
         {
           criterion: 'Language Compatibility',
@@ -173,7 +173,7 @@ export function calculateMatches(
           criterion: 'Academic Level',
           weight: WEIGHTS.studyLevel,
           contribution: WEIGHTS.studyLevel * studyMatch,
-          explanation: `Study levels: ${mentor.levelOfStudies} / ${mentee.levelOfStudies}`
+          explanation: `Study levels: ${mentor.levelOfStudies} | ${mentee.levelOfStudies}`
         },
         {
           criterion: 'Nationality',
