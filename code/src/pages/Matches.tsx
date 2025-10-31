@@ -63,30 +63,45 @@ export default function Matches() {
 
     // Calculate to match based on the hungarian algorithm
     const mentorMatches = new Map<string, Match[]>();
-    let matrix = []
+    const matrix: number[][] = [];
 
-    mentors.forEach(mentor => {
+    // Filter mentors and mentees that haven't been approved yet
+    const availableMentors = mentors.filter(m => !approvedPairs.has(m.id));
+    const availableMentees = mentees.filter(m => !approvedPairs.has(m.id));
+
+    // Build cost matrix (Hungarian algorithm minimizes cost, so use 1 - normalizedScore)
+    availableMentors.forEach(mentor => {
       const allMatches = getAllMatches(pendingMatches, mentor.id, undefined);
-      let rowList: number[] = [];
-      allMatches.forEach(match => {
-        rowList.push(match.normalizedScore);
+      const rowList: number[] = [];
+
+      availableMentees.forEach(mentee => {
+        const match = allMatches.find(m => m.menteeId === mentee.id);
+        // Use inverse of normalized score as cost (lower score = higher cost)
+        rowList.push(match ? (1 - match.normalizedScore) : 1);
       });
+
       matrix.push(rowList);
     });
-    const bestMatches = minWeightAssign(matrix).assignments;
 
-    let counter = 1;
-    bestMatches.forEach(matchNumber => {
-      const allMatches = getAllMatches(pendingMatches, String(counter), undefined);
-      let newList: Match[] = [];
-      allMatches.forEach( match => {
-        if (match.menteeId == String(matchNumber)) {
-          newList.push(match)
+    // Only run Hungarian algorithm if we have both mentors and mentees
+    if (matrix.length > 0 && matrix[0].length > 0) {
+      const result = minWeightAssign(matrix);
+
+      result.assignments.forEach((menteeIndex, mentorIndex) => {
+        const mentor = availableMentors[mentorIndex];
+        const mentee = availableMentees[menteeIndex];
+
+        if (mentor && mentee) {
+          const match = pendingMatches.find(
+            m => m.mentorId === mentor.id && m.menteeId === mentee.id
+          );
+
+          if (match) {
+            mentorMatches.set(mentor.id, [match]);
+          }
         }
-      })
-      mentorMatches.set(String(counter), newList);
-      counter++;
-    });
+      });
+    }
 
     // Create nodes - approved matches at top
     const newNodes: Node[] = [];
@@ -148,7 +163,14 @@ export default function Matches() {
 
     // Create nodes for pending matches
     const pendingMentors = mentors.filter(m => !approvedPairs.has(m.id) && mentorMatches.has(m.id));
-    const pendingMentees = mentees.filter(m => !approvedPairs.has(m.id) && menteeMatches.has(m.id));
+    const pendingMentees = mentees.filter(m => !approvedPairs.has(m.id));
+
+    // Get all mentee IDs that are in the best matches
+    const matchedMenteeIds = new Set<string>();
+    mentorMatches.forEach(matches => {
+      matches.forEach(match => matchedMenteeIds.add(match.menteeId));
+    });
+    const filteredPendingMentees = pendingMentees.filter(m => matchedMenteeIds.has(m.id));
     
     const startY = 50 + approved.length * 120 + 100;
     
@@ -174,19 +196,19 @@ export default function Matches() {
       });
     });
 
-    pendingMentees.forEach((mentee, index) => {
+    filteredPendingMentees.forEach((mentee, index) => {
       newNodes.push({
         id: `mentee-${mentee.id}`,
         type: 'default',
         position: { x: 600, y: startY + index * 100 },
-        data: { 
+        data: {
           label: (
             <div className="text-xs">
               <div className="font-semibold">{mentee.id}</div>
             </div>
           )
         },
-        style: { 
+        style: {
           background: 'hsl(var(--secondary))',
           color: 'white',
           border: '2px solid hsl(var(--secondary))',
@@ -224,12 +246,9 @@ export default function Matches() {
       }
 
       const mentorTopMatches = mentorMatches.get(match.mentorId) || [];
-      //const menteeTopMatches = menteeMatches.get(match.menteeId) || [];
-      
       const isMentorTop = mentorTopMatches.some(m => m.menteeId === match.menteeId);
-      //const isMenteeTop = menteeTopMatches.some(m => m.mentorId === match.mentorId);
-      
-      if (isMentorTop/* || isMenteeTop*/) {
+
+      if (isMentorTop) {
         newEdges.push({
           id: `edge-${match.mentorId}-${match.menteeId}`,
           source: `mentor-${match.mentorId}`,
