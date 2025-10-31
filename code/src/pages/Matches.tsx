@@ -118,7 +118,6 @@ export default function Matches() {
               label: (
                 <div className="text-xs">
                   <div className="font-semibold">✓ {mentor.id}</div>
-                  <div className="text-muted-foreground">{mentor.levelOfStudies}</div>
                 </div>
               )
             },
@@ -138,7 +137,6 @@ export default function Matches() {
               label: (
                 <div className="text-xs">
                   <div className="font-semibold">✓ {mentee.id}</div>
-                  <div className="text-muted-foreground">{mentee.levelOfStudies}</div>
                 </div>
               )
             },
@@ -216,19 +214,28 @@ export default function Matches() {
     
     // Approved edges
     approved.forEach(match => {
+      // Ensure edges attach to the short side of the node frame:
+      // mentors (left column) should emit from the right, mentees (right column) should receive on the left.
+      const mentorNode = newNodes.find(n => n.id === `mentor-${match.mentorId}-approved`);
+      if (mentorNode) (mentorNode as any).sourcePosition = 'right';
+
+      const menteeNode = newNodes.find(n => n.id === `mentee-${match.menteeId}-approved`);
+      if (menteeNode) (menteeNode as any).targetPosition = 'left';
+
       newEdges.push({
-        id: `edge-${match.mentorId}-${match.menteeId}`,
-        source: `mentor-${match.mentorId}-approved`,
-        target: `mentee-${match.menteeId}-approved`,
-        animated: true,
-        style: { 
-          stroke: 'hsl(var(--accent))',
-          strokeWidth: 3
-        },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: 'hsl(var(--accent))'
-        }
+      id: `edge-${match.mentorId}-${match.menteeId}`,
+      source: `mentor-${match.mentorId}-approved`,
+      target: `mentee-${match.menteeId}-approved`,
+      animated: true,
+      style: { 
+        stroke: 'hsl(var(--accent))',
+        strokeWidth: 3
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: 'hsl(var(--accent))'
+      },
+      data: { match }
       });
     });
 
@@ -242,6 +249,14 @@ export default function Matches() {
       const isMentorTop = mentorTopMatches.some(m => m.menteeId === match.menteeId);
 
       if (isMentorTop) {
+        // Ensure edges attach to the short side of the node frame:
+        // mentors (left column) should emit from the right, mentees (right column) should receive on the left.
+        const mentorNode = newNodes.find(n => n.id === `mentor-${match.mentorId}`);
+        if (mentorNode) (mentorNode as any).sourcePosition = 'right';
+
+        const menteeNode = newNodes.find(n => n.id === `mentee-${match.menteeId}`);
+        if (menteeNode) (menteeNode as any).targetPosition = 'left';
+
         newEdges.push({
           id: `edge-${match.mentorId}-${match.menteeId}`,
           source: `mentor-${match.mentorId}`,
@@ -298,8 +313,7 @@ export default function Matches() {
             <div>
               <h1 className="text-2xl font-bold">Match Visualization</h1>
               <p className="text-sm text-muted-foreground">
-                {/* TODO:  Change the number of pending matches to the number of mentors/mentees without a match */}
-                {approvedMatches.length} approved • {matches.filter(m => m.status === 'pending').length} pending
+                {approvedMatches.length} approved • {mentors.length-approvedMatches.length} pending
               </p>
             </div>
           </div>
@@ -320,8 +334,12 @@ export default function Matches() {
         </ReactFlow>
 
         {selectedMatch && (
-          //TODO: Add an option to close the window
           <Card className="absolute top-4 right-4 w-96 p-6 shadow-2xl">
+            <div className="absolute top-2 right-2">
+              <Button variant="ghost" onClick={() => setSelectedMatch(null)} aria-label="Close">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
             <h3 className="text-lg font-semibold mb-4">Match Details</h3>
             
             <div className="space-y-4 mb-6">
@@ -365,6 +383,21 @@ export default function Matches() {
                 <X className="w-4 h-4 mr-2" />
                 Reject
               </Button>
+              {(() => {
+                const ApproveButtonHider = ({ match }: { match: Match | null }) => {
+                  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+                  useEffect(() => {
+                    const approveBtn = anchorEl?.nextElementSibling as HTMLElement | null;
+                    if (!approveBtn) return;
+                    approveBtn.style.display = match?.status === 'approved' ? 'none' : '';
+                  }, [anchorEl, match?.status]);
+
+                  return <span ref={setAnchorEl as any} />;
+                };
+
+                return <ApproveButtonHider match={selectedMatch} />;
+              })()}
               <Button
                 className="flex-1"
                 onClick={handleApprove}
