@@ -35,8 +35,8 @@ export default function Criteria() {
     
     if (attribute === 'gender') {
     // Return all mentor IDs as strings, no duplicates, sorted
-      uniqueValues.add(String('abc'));
-      uniqueValues.add(String('def'));
+      uniqueValues.add(String('Male'));
+      uniqueValues.add(String('Female'));
 
     }
 
