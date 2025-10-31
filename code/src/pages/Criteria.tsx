@@ -142,8 +142,8 @@ export default function Criteria() {
                 <SelectContent>
                   <SelectItem value="equals">equals</SelectItem>
                   <SelectItem value="not_equals">not equals</SelectItem>
-                  <SelectItem value="contains">contains</SelectItem>
-                  <SelectItem value="does_not_contain">does not contain</SelectItem>
+                  <SelectItem value="at_least">at least</SelectItem>
+                  <SelectItem value="at_most">at most</SelectItem>
                 </SelectContent>
               </Select>
 
