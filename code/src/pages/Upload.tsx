@@ -79,7 +79,7 @@ export default function Upload() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto">
           <header className="text-center mb-12">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4 p-6">
               Mentor-Mentee Matching Platform
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -102,7 +102,7 @@ export default function Upload() {
 
             <UploadCard
               title="Mentee Data"
-              icon={<FileText className="w-8 h-8" />}
+              icon={<Users className="w-8 h-8" />}
               file={menteeFile}
               onDrop={(e) => handleDrop(e, 'mentee')}
               onFileSelect={(e) => {
