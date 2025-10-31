@@ -16,20 +16,20 @@ export default function Criteria() {
   const { mentors, mentees, criteria, addCriterion, removeCriterion, setMatches } = useMatching();
   const [newCriterion, setNewCriterion] = useState<Partial<MatchingCriterion>>({
     menteeId: mentees[0]?.id || '',
-    attribute: 'gender',
+    attribute: 'MentorId',
     condition: 'equals',
     value: ''
   });
 
   const attributes = [
-    'mentorId', 'gender', 'nationality', 'city', 'levelOfStudies', 
-    'germanLevel', 'englishLevel', 'birthYear'
+    'MentorId', 'Gender', 'Nationality', 'City', 'Level ofStudies', 
+    'GermanLevel', 'EnglishLevel', 'Birth year'
   ];
 
   const getAttributeOptions = (attribute: string): string[] => {
     const uniqueValues = new Set<string>();
     
-    if (attribute === 'mentorId') {
+    if (attribute === 'MentorId') {
       return mentors.map(m => m.id);
     }
     
@@ -55,7 +55,7 @@ export default function Criteria() {
       addCriterion(newCriterion as MatchingCriterion);
       setNewCriterion({
         menteeId: mentees[0]?.id || '',
-        attribute: 'gender',
+        attribute: 'MentorId',
         condition: 'equals',
         value: ''
       });
@@ -126,7 +126,7 @@ export default function Criteria() {
                 <SelectContent>
                   {attributes.map(attr => (
                     <SelectItem key={attr} value={attr}>
-                      {attr === 'mentorId' ? 'Mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim()}
+                      {attr === 'MentorId' ? 'Mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim()}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -141,7 +141,7 @@ export default function Criteria() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="equals">equals</SelectItem>
-                  <SelectItem value="not_equals">not equals</SelectItem>
+                  <SelectItem value="not_equals">does not equal</SelectItem>
                   <SelectItem value="contains">contains</SelectItem>
                   <SelectItem value="does_not_contain">does not contain</SelectItem>
                 </SelectContent>
