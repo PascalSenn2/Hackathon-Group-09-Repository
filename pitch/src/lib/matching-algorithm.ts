@@ -104,17 +104,11 @@ function passesExclusionCriteria(
       case 'not_equals':
         if (actualValue !== criterionValue) return false;
         break;
-      case 'contains':
-        if (actualValue.includes(criterionValue)) return false;
+      case 'at_least':
+        if (Number(actualValue) >= Number(criterionValue)) return false;
         break;
-      case 'does_not_contain':
-        if (!actualValue.includes(criterionValue)) return false;
-        break;
-      case 'greater_than':
-        if (Number(actualValue) > Number(criterionValue)) return false;
-        break;
-      case 'less_than':
-        if (Number(actualValue) < Number(criterionValue)) return false;
+      case 'at_most':
+        if (Number(actualValue) <= Number(criterionValue)) return false;
         break;
     }
   }

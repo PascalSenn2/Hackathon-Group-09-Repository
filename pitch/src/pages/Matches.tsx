@@ -133,7 +133,6 @@ export default function Matches() {
           label: (
             <div className="text-xs">
               <div className="font-semibold">{mentor.id}</div>
-              <div className="text-muted-foreground">{mentor.levelOfStudies}</div>
             </div>
           )
         },
@@ -156,7 +155,6 @@ export default function Matches() {
           label: (
             <div className="text-xs">
               <div className="font-semibold">{mentee.id}</div>
-              <div className="text-muted-foreground">{mentee.levelOfStudies}</div>
             </div>
           )
         },
@@ -260,6 +258,7 @@ export default function Matches() {
             <div>
               <h1 className="text-2xl font-bold">Match Visualization</h1>
               <p className="text-sm text-muted-foreground">
+                {/* TODO:  Change the number of pending matches to the number of mentors/mentees without a match */}
                 {approvedMatches.length} approved • {matches.filter(m => m.status === 'pending').length} pending
               </p>
             </div>
@@ -281,6 +280,7 @@ export default function Matches() {
         </ReactFlow>
 
         {selectedMatch && (
+          //TODO: Add an option to close the window
           <Card className="absolute top-4 right-4 w-96 p-6 shadow-2xl">
             <h3 className="text-lg font-semibold mb-4">Match Details</h3>
             

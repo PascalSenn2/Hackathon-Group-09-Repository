@@ -26,7 +26,7 @@ export interface Mentee {
 export interface MatchingCriterion {
   menteeId: string;
   attribute: string;
-  condition: 'equals' | 'not_equals' | 'greater_than' | 'less_than';
+  condition: 'equals' | 'not_equals' | 'at_least' | 'at_most';
   value: string;
 }
 
