@@ -13,7 +13,7 @@ The challenge is to design a system that automates and enhances this matching pr
 ## Solution description
 The application we created is made up of three pages. In the following, these pages and what happens synchronously in the backend will be explained:
 
-### Upload page:
+### Upload page
 On the first page, the admin is asked to upload two documents. These are the application files (in .csv format) of the mentors and the mentees respectively. These files are then parsed to extract the necessary information.
 
 The information extracted from the mentors application file consists of:
@@ -45,15 +45,15 @@ On this page, the admin can predefine requirements that must or must not hold fo
 There are four fields that require filling in by the admin to add a requirement:
 1. The first field is a dropdown menu with all Mentee IDs.
 2. The second field is a dropdown menu for choosing the criterion. The options of criteria include: Mentor ID, Gender, Nationality, City, Level of studies, German level, English level & Birth year.
-3. Thirdly, the admin can choose whether the criterion must or must not equal the subsequent value. For some of the criteria, there is the additional option of choosing "Bigger than" or "Smaller than".
-4. The last field is again a dropdown menu now consisting of all possible values that work for the given criterion and exist in the given mentors.
+3. Thirdly, the admin can choose whether the criterion must or must not equal the subsequent value. For some of the criteria, there is the additional option of choosing "at least" or "at mosts".
+4. The last field is again a dropdown menu now consisting of all possible values that are possible for the given criterion and exist in the set of given mentors.
 
 Finally, the admin can add the rule via a button and therefore apply it.
 
 ### Matches page
-When turning towards this page, the matching-algorithm (see below for more information on the algorithm) is applied. Here we have two columns: On the left side there is one field for every mentee and on the right, one field for every mentor. The best matches between these are then visualized with links connecting the mentees to mentors.
+When turning towards this page, the matching-algorithm (see below for more information on the algorithm) is applied. Here we have two columns: On the left side there is one field for every mentor and on the right one field for every mentee. The best matches between these are then visualized with links connecting the mentors and mentees.
 
-To get more information on a certain match, the admin can click on the corresponding link. A pop-up window will appear, showing the overall score of the match and all the individual scores of criteria. Additionally, the values of both parties are mentioned to make everything more transparent. On the pop-up, the admin can also either reject or approve a the match. When a match is rejected the link vanishes from the graph and the other links are recalculated. When a match is applied, the mentee and mentor fields and their link are moved to the top of the page and coloured in green to visualize that they are an approved match. Again, all other links are recalculated in that case.
+To get more information on a certain match, the admin can click on the corresponding link. A pop-up window will appear, showing the overall score of the match and all the individual scores of the criteria. Additionally, the values of both parties are mentioned to make everything more transparent. On the pop-up, the admin can also either reject or approve a the match. When a match is rejected the link vanishes from the graph and all links are redrawn to represent the new gloabal optimum. When a match is applied, the mentee and mentor fields and their link are moved to the top of the page and coloured in green to visualize that they are an approved match. In this case, the other links do not have to be recalculated or redrawn. One can also still reject already approved links and they are again moved down and the new optimum is visualized
 
 ### Matching Algorithm
 First, some of the possible criterion values are mapped to specific numbers to make comparison between them possible. For example, the language level A2 is mapped to the number 2 while the level B1 correspons to the number 3 and since 2 < 3 holds, A2 < B1 holds as well.
