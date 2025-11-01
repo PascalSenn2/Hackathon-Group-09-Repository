@@ -60,12 +60,12 @@ First, some of the possible criterion values are mapped to specific numbers to m
 
 Then, the weights of the criteria are defined. This makes sure that more important criteria such as field of study will be more strongly taken into account.
 
-Next, for each criterion a value on how well the mentor and the mentee match is created an normalized. The normalized values of all the criteria are then multiplied with their belonging weights and added up to get a total distance. This distances basically serves as the overall score of that match.
+Next, for each criterion a value on how well the mentor and the mentee match is created an normalized. The normalized values of all the criteria are then multiplied with their belonging weights and added up to get a total distance. The normalized distances basically serves as the overall score of that match.
 
-Finally, the top matches are then chosen to maximize the average total score of matches from the list of all matches and their corresponding score. Contemporarily, the addtional requirements created by the admin on the second page are taken into account so that certain matches either become impossible or are enforced.
+Finally, the top matches are then chosen to globally maximize the average total score of matches from the list of all matches and their corresponding score. This is done by creating a matrix wiht all normalized scores and computing the hungarian algorithm of that matrix. Contemporarily, the addtional requirements created by the admin on the second page are taken into account so that certain matches either become impossible or are enforced.
 
 ## Tech stack
-This project was created in collaboration with the AI tool Lovable using:
+This project was created in collaboration with the AI tools Lovable & Bolt using:
 
 - Vite
 - TypeScript
@@ -74,3 +74,8 @@ This project was created in collaboration with the AI tool Lovable using:
 - Tailwind CSS
 
 ## Notes on file structure for csv input
+For the program to work properly, we required some small changes in the .csv files that should be followed by the admin when creating these files. They include:
+
+- We require the admin to input some criteria only in english. (nationality, academic level & gender)
+- We standerdized the criterion "gender" to Male / Female for both files.
+- The university levels were standardized to a set of given options instead of open text.
