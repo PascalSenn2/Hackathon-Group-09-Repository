@@ -153,8 +153,8 @@ export default function Criteria() {
                   <SelectValue placeholder="Select Condition" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="equals">equals</SelectItem>
-                  <SelectItem value="not_equals">not equals</SelectItem>
+                  <SelectItem value="equals">does not equal</SelectItem>
+                  <SelectItem value="not_equals">equals</SelectItem>
                   <SelectItem value="at_least">at least</SelectItem>
                   <SelectItem value="at_most">at most</SelectItem>
                 </SelectContent>
@@ -201,7 +201,7 @@ export default function Criteria() {
                     <p className="text-sm">
                       Mentee <span className="font-semibold text-primary">{criterion.menteeId}</span> cannot match when{' '}
                       <span className="font-semibold">{criterion.attribute === 'mentorId' ? 'Mentor ID' : criterion.attribute}</span>{' '}
-                      <span className="font-semibold">{criterion.condition.replace(/_/g, ' ')}</span>{' '}
+                      <span className="font-semibold">{criterion.condition.replace(/not_equals/g, 'does not equal')}</span>{' '}
                       <span className="font-semibold text-primary">"{criterion.value}"</span>
                     </p>
                     <Button
