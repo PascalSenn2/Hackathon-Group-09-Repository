@@ -139,7 +139,7 @@ export default function Criteria() {
                 <SelectContent>
                   {attributes.map(attr => (
                     <SelectItem key={attr} value={attr}>
-                      {attr === 'mentorId' ? 'Mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim()}
+                      {attr === 'mentorId' ? 'mentor ID' : attr.replace(/([A-Z])/g, ' $1').trim().toLowerCase()}
                     </SelectItem>
                   ))}
                 </SelectContent>
