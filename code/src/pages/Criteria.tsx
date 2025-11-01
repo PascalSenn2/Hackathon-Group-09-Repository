@@ -33,13 +33,19 @@ export default function Criteria() {
       return mentors.map(m => m.id);
     }
     
-    if (attribute === 'gender') {
-    // Return all mentor IDs as strings, no duplicates, sorted
-      uniqueValues.add(String('Male'));
-      uniqueValues.add(String('Female'));
-    }
 
+    [...mentors, ...mentees].forEach(person => {
+      const value = (person as any)[attribute];
+      if (value === undefined || value === null || value === '') return;
 
+      if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (v !== undefined && v !== null && v !== '') uniqueValues.add(String(v));
+      });
+      } else {
+      uniqueValues.add(String(value));
+      }
+    });
     // [...mentors, ...mentees].forEach(person => {
     //   const value = person[attribute as keyof (typeof person)];
     //   if (value !== undefined && value !== null && value !== '') {
