@@ -144,6 +144,9 @@ export function calculateMatches(
         WEIGHTS.studyLevel * studyMatch +
         WEIGHTS.nationality * nationalityMatch;
 
+      const mentorStudyLabel = mentor.levelOfStudies && mentor.levelOfStudies.trim() !== '' ? mentor.levelOfStudies : 'No level stated';
+      const menteeStudyLabel = mentee.levelOfStudies && mentee.levelOfStudies.trim() !== '' ? mentee.levelOfStudies : 'No level stated';
+
       const reasons: MatchReason[] = [
         {
           criterion: 'Age Difference',
@@ -173,7 +176,7 @@ export function calculateMatches(
           criterion: 'Academic Level',
           weight: WEIGHTS.studyLevel,
           contribution: WEIGHTS.studyLevel * studyMatch,
-          explanation: `Study levels: ${mentor.levelOfStudies} | ${mentee.levelOfStudies}`
+          explanation: `Study levels: ${mentorStudyLabel} | ${menteeStudyLabel}`
         },
         {
           criterion: 'Nationality',
